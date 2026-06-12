@@ -1,0 +1,13 @@
+* text=auto
+
+*.png binary
+*.ico binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+
+*.tsv text eol=lf
+*.csv text eol=lf
+*.dat text eol=lf
+*.txt text eol=lf
+*.md text eol=lf

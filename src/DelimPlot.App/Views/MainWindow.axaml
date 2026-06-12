@@ -1,0 +1,488 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sp="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
+        xmlns:primitives="clr-namespace:Avalonia.Controls.Primitives;assembly=Avalonia.Controls"
+        xmlns:controls="clr-namespace:DelimPlot.App.Controls"
+        x:Class="DelimPlot.App.Views.MainWindow"
+        Title="DelimPlot"
+        Icon="/Assets/AppIcon.ico"
+        Width="1280"
+        Height="820"
+        MinWidth="1080"
+        MinHeight="680">
+  <Window.Styles>
+    <Style Selector="Border.panel">
+      <Setter Property="BorderBrush" Value="#D7DCE2" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Background" Value="#FFFFFF" />
+      <Setter Property="Padding" Value="10" />
+      <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+    <Style Selector="TextBlock.panel-title">
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Foreground" Value="#172033" />
+      <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+    <Style Selector="TextBlock.field-label">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="#4B5563" />
+      <Setter Property="Margin" Value="0,8,0,3" />
+    </Style>
+    <Style Selector="TextBlock.muted">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="#6B7280" />
+    </Style>
+    <Style Selector="Button.compact">
+      <Setter Property="MinHeight" Value="28" />
+      <Setter Property="Padding" Value="9,3" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.thumbnail-close">
+      <Setter Property="Width" Value="28" />
+      <Setter Property="Height" Value="22" />
+      <Setter Property="MinWidth" Value="28" />
+      <Setter Property="MinHeight" Value="22" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Background" Value="#B0CBD5E1" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Foreground" Value="#111827" />
+      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              TextElement.Foreground="{TemplateBinding Foreground}" />
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="Button.thumbnail-close:pointerover">
+      <Setter Property="Background" Value="#DC2626" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Foreground" Value="#FFFFFF" />
+    </Style>
+    <Style Selector="Button.thumbnail-close:pressed">
+      <Setter Property="Background" Value="#FCA5A5" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Foreground" Value="#FFFFFF" />
+    </Style>
+    <Style Selector="ScrollViewer">
+      <Setter Property="AllowAutoHide" Value="False" />
+      <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+    <Style Selector="ScrollBar">
+      <Setter Property="AllowAutoHide" Value="False" />
+    </Style>
+    <Style Selector="ScrollBar:vertical">
+      <Setter Property="Width" Value="14" />
+      <Setter Property="MinWidth" Value="14" />
+    </Style>
+    <Style Selector="ScrollBar:horizontal">
+      <Setter Property="Height" Value="14" />
+      <Setter Property="MinHeight" Value="14" />
+    </Style>
+    <Style Selector="GridSplitter">
+      <Setter Property="Background" Value="#D1D5DB" />
+    </Style>
+  </Window.Styles>
+
+  <DockPanel Background="#EEF1F5">
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="_File">
+        <MenuItem Header="_Import Data Files..." Click="OpenFile_Click" />
+        <MenuItem Header="Import _Project..." Click="ImportProject_Click" />
+        <MenuItem Header="_Export Project..." Click="ExportProject_Click" IsEnabled="{Binding CanExportProject}" />
+        <Separator />
+        <MenuItem Header="Save As _PNG..." Click="SavePng_Click" IsEnabled="{Binding CanSavePlot}" />
+        <Separator />
+        <MenuItem Header="E_xit" Click="Exit_Click" />
+      </MenuItem>
+      <MenuItem Header="_Edit">
+        <MenuItem Header="_New Graph" Command="{Binding NewPlotCommand}" />
+        <MenuItem Header="_Delete Selected Graphs" Click="DeleteSelectedSnapshots_Click" IsEnabled="{Binding HasSnapshots}" />
+      </MenuItem>
+      <MenuItem Header="_View">
+        <MenuItem Header="_Auto Scale Plot" Click="AutoScalePlot_Click" IsEnabled="{Binding CanSavePlot}" />
+      </MenuItem>
+      <MenuItem Header="_About">
+        <MenuItem Header="About _DelimPlot" Click="About_Click" />
+      </MenuItem>
+    </Menu>
+
+    <Border DockPanel.Dock="Bottom" Background="#F8FAFC" BorderBrush="#D7DCE2" BorderThickness="0,1,0,0" Padding="10,5">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Text="{Binding StatusMessage}" Classes="muted" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        <TextBlock Grid.Column="1" Text="{Binding SelectedFile.Summary}" Classes="muted" VerticalAlignment="Center" Margin="12,0,0,0" />
+      </Grid>
+    </Border>
+
+    <Grid Margin="0" ClipToBounds="True">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="320" MinWidth="260" />
+        <ColumnDefinition Width="4" MinWidth="4" MaxWidth="4" />
+        <ColumnDefinition Width="*" MinWidth="360" />
+        <ColumnDefinition Width="4" MinWidth="4" MaxWidth="4" />
+        <ColumnDefinition Width="400" MinWidth="340" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*" MinHeight="520" />
+      </Grid.RowDefinitions>
+
+      <Grid Grid.Column="0" MinWidth="260" ClipToBounds="True">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="230" MinHeight="140" />
+          <RowDefinition Height="4" MinHeight="4" MaxHeight="4" />
+          <RowDefinition Height="*" MinHeight="160" />
+        </Grid.RowDefinitions>
+        <Border x:Name="DropZone" Grid.Row="0" Classes="panel">
+          <Grid RowDefinitions="Auto,*,Auto">
+            <TextBlock Text="File List" Classes="panel-title" />
+            <ListBox x:Name="FileListBox"
+                     Grid.Row="1"
+                     ItemsSource="{Binding Files}"
+                     SelectedItem="{Binding SelectedFile}"
+                     SelectionMode="Multiple"
+                     BorderBrush="#D7DCE2"
+                     BorderThickness="1">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <Grid ColumnDefinitions="*,Auto" Margin="4,3">
+                    <StackPanel>
+                      <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                      <TextBlock Text="{Binding Summary}" Classes="muted" />
+                    </StackPanel>
+                    <Button Grid.Column="1"
+                            Content="Delete"
+                            Click="DeleteFileItem_Click"
+                            Classes="compact"
+                            Margin="8,0,0,0" />
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <Grid Grid.Row="2" ColumnDefinitions="*,*,*" ColumnSpacing="6" Margin="0,8,0,0">
+              <Button Content="Import Data"
+                      Classes="compact"
+                      HorizontalAlignment="Stretch"
+                      Click="OpenFile_Click" />
+              <Button Grid.Column="1"
+                      Content="Delete Selected"
+                      Classes="compact"
+                      HorizontalAlignment="Stretch"
+                      IsEnabled="{Binding HasFiles}"
+                      Click="DeleteSelectedFiles_Click" />
+              <Button Grid.Column="2"
+                      Content="Clear List"
+                      Classes="compact"
+                      HorizontalAlignment="Stretch"
+                      IsEnabled="{Binding HasFiles}"
+                      Click="ClearFileList_Click" />
+            </Grid>
+          </Grid>
+        </Border>
+
+        <GridSplitter Grid.Row="1"
+                      Height="4"
+                      HorizontalAlignment="Stretch"
+                      ResizeDirection="Rows"
+                      ResizeBehavior="PreviousAndNext"
+                      ShowsPreview="False" />
+
+        <Border Grid.Row="2" Classes="panel" MinHeight="160">
+          <Grid RowDefinitions="Auto,*">
+            <TextBlock Text="Data Preview" Classes="panel-title" />
+            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+              <ItemsControl ItemsSource="{Binding PreviewRows}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <ItemsControl ItemsSource="{Binding Cells}">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                          <Border Width="96"
+                                  MinHeight="24"
+                                  BorderBrush="#E5E7EB"
+                                  BorderThickness="0,0,1,1"
+                                  Background="#FFFFFF"
+                                  Padding="6,3">
+                            <TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="12" TextTrimming="CharacterEllipsis" />
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </Grid>
+        </Border>
+      </Grid>
+
+      <GridSplitter Grid.Column="1"
+                    Width="4"
+                    VerticalAlignment="Stretch"
+                    ResizeDirection="Columns"
+                    ResizeBehavior="PreviousAndNext"
+                    ShowsPreview="False" />
+
+      <Border Grid.Column="2" Classes="panel" Padding="0" MinWidth="360" ClipToBounds="True">
+        <sp:AvaPlot x:Name="PlotControl" />
+      </Border>
+
+      <GridSplitter Grid.Column="3"
+                    Width="4"
+                    VerticalAlignment="Stretch"
+                    ResizeDirection="Columns"
+                    ResizeBehavior="PreviousAndNext"
+                    ShowsPreview="False" />
+
+      <Grid Grid.Column="4" MinWidth="340" ClipToBounds="True">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*" MinHeight="240" />
+          <RowDefinition Height="4" MinHeight="4" MaxHeight="4" />
+          <RowDefinition Height="300" MinHeight="210" />
+        </Grid.RowDefinitions>
+        <Border Grid.Row="0" Classes="panel">
+          <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+              <TextBlock Text="Plot Configuration" Classes="panel-title" />
+
+              <TextBlock Text="Title" Classes="field-label" />
+              <TextBox Text="{Binding PlotTitle}" />
+
+              <TextBlock Text="X Column" Classes="field-label" />
+              <ComboBox ItemsSource="{Binding Columns}"
+                        SelectedItem="{Binding SelectedXColumn}"
+                        HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <StackPanel>
+                  <TextBlock Text="X Label" Classes="field-label" />
+                  <TextBox Text="{Binding XAxisLabel}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                  <TextBlock Text="Y Label" Classes="field-label" />
+                  <TextBox Text="{Binding YAxisLabel}" />
+                </StackPanel>
+              </Grid>
+
+              <Grid ColumnDefinitions="*,Auto" Margin="0,12,0,6">
+                <TextBlock Text="Y Series" Classes="panel-title" Margin="0" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="+" Command="{Binding AddSeriesCommand}" Classes="compact" />
+              </Grid>
+
+              <ItemsControl ItemsSource="{Binding Series}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border BorderBrush="#E5E7EB" BorderThickness="1" Padding="8" Margin="0,0,0,8">
+                      <StackPanel>
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Text="Series" FontWeight="SemiBold" FontSize="12" Foreground="#374151" />
+                          <Button Grid.Column="1"
+                                  Content="-"
+                                  Command="{Binding RemoveCommand}"
+                                  IsVisible="{Binding CanRemove}"
+                                  Classes="compact" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                          <StackPanel>
+                            <TextBlock Text="Y Column" Classes="field-label" Margin="0,6,0,3" />
+                            <ComboBox ItemsSource="{Binding ColumnOptions}"
+                                      SelectedItem="{Binding SelectedYColumn}"
+                                      HorizontalAlignment="Stretch">
+                              <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                  <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                </DataTemplate>
+                              </ComboBox.ItemTemplate>
+                            </ComboBox>
+                          </StackPanel>
+
+                          <StackPanel Grid.Column="1">
+                            <TextBlock Text="Style" Classes="field-label" Margin="0,6,0,3" />
+                            <ComboBox ItemsSource="{Binding StyleOptions}"
+                                      SelectedItem="{Binding SelectedStyleOption}"
+                                      HorizontalAlignment="Stretch">
+                              <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                  <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                              </ComboBox.ItemTemplate>
+                            </ComboBox>
+                          </StackPanel>
+                        </Grid>
+
+                        <TextBlock Text="Color" Classes="field-label" Margin="0,6,0,3" />
+                        <ComboBox ItemsSource="{Binding ColorOptions}"
+                                  SelectedItem="{Binding Color}"
+                                  HorizontalAlignment="Stretch">
+                          <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                              <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Border Width="16" Height="16" Background="{Binding}" BorderBrush="#9CA3AF" BorderThickness="1" />
+                                <TextBlock Text="{Binding}" FontSize="12" />
+                              </StackPanel>
+                            </DataTemplate>
+                          </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <Grid ColumnDefinitions="76,*,42" ColumnSpacing="8" Margin="0,8,0,0">
+                          <TextBlock Text="Line" Classes="field-label" Margin="0" VerticalAlignment="Center" />
+                          <controls:FixedSlider Grid.Column="1"
+                                                Minimum="0.5"
+                                                Maximum="12"
+                                                Step="0.5"
+                                                HorizontalAlignment="Stretch"
+                                                Value="{Binding LineWidth}" />
+                          <TextBlock Grid.Column="2"
+                                     Text="{Binding LineWidth, StringFormat={}{0:0.#}}"
+                                     HorizontalAlignment="Right"
+                                     VerticalAlignment="Center"
+                                     FontSize="12" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="76,*,42" ColumnSpacing="8" Margin="0,6,0,0">
+                          <TextBlock Text="Marker" Classes="field-label" Margin="0" VerticalAlignment="Center" />
+                          <controls:FixedSlider Grid.Column="1"
+                                                Minimum="1"
+                                                Maximum="20"
+                                                Step="1"
+                                                HorizontalAlignment="Stretch"
+                                                Value="{Binding MarkerSize}" />
+                          <TextBlock Grid.Column="2"
+                                     Text="{Binding MarkerSize, StringFormat={}{0:0}}"
+                                     HorizontalAlignment="Right"
+                                     VerticalAlignment="Center"
+                                     FontSize="12" />
+                        </Grid>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,6,0,0">
+                <Button Content="Confirm"
+                        Command="{Binding ConfirmPlotCommand}"
+                        HorizontalAlignment="Stretch"
+                        MinHeight="34"
+                        Classes="compact" />
+                <Button Grid.Column="1"
+                        Content="Plot as New Graph"
+                        Command="{Binding PlotAsNewGraphCommand}"
+                        HorizontalAlignment="Stretch"
+                        MinHeight="34"
+                        Classes="compact" />
+              </Grid>
+            </StackPanel>
+          </ScrollViewer>
+        </Border>
+
+        <GridSplitter Grid.Row="1"
+                      Height="4"
+                      HorizontalAlignment="Stretch"
+                      ResizeDirection="Rows"
+                      ResizeBehavior="PreviousAndNext"
+                      ShowsPreview="False" />
+
+        <Border Grid.Row="2" Classes="panel" MinHeight="210">
+          <Grid RowDefinitions="Auto,*,Auto">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="Graph Browser" Classes="panel-title" VerticalAlignment="Center" />
+              <Button Grid.Column="1"
+                      Content="+ New"
+                      Command="{Binding NewPlotCommand}"
+                      Classes="compact"
+                      Margin="8,0,0,8" />
+            </Grid>
+
+            <ListBox x:Name="GraphBrowserList"
+                     Grid.Row="1"
+                     ItemsSource="{Binding Snapshots}"
+                     SelectedItem="{Binding SelectedSnapshot}"
+                     SelectionMode="Multiple"
+                     BorderBrush="#D7DCE2"
+                     BorderThickness="1"
+                     Padding="4">
+              <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <primitives:UniformGrid Columns="3" />
+                </ItemsPanelTemplate>
+              </ListBox.ItemsPanel>
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel Margin="3">
+                    <Border Height="72"
+                            Background="#F3F4F6"
+                            BorderBrush="#CBD5E1"
+                            BorderThickness="1">
+                      <Grid ClipToBounds="True">
+                        <Image Source="{Binding Thumbnail}"
+                               Stretch="UniformToFill"
+                               IsVisible="{Binding HasThumbnail}" />
+                        <TextBlock Text="{Binding StatusText}"
+                                   IsVisible="{Binding HasStatusText}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontSize="11"
+                                   Foreground="#6B7280" />
+                        <Button Content="×"
+                                Command="{Binding DeleteCommand}"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Classes="thumbnail-close"
+                                Margin="3" />
+                      </Grid>
+                    </Border>
+                    <TextBlock Text="{Binding Name}"
+                               TextAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               FontSize="11"
+                               Margin="0,3,0,0" />
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+
+            <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,8,0,0">
+              <Button Content="Delete Selected"
+                      Click="DeleteSelectedSnapshots_Click"
+                      IsEnabled="{Binding HasSnapshots}"
+                      HorizontalAlignment="Stretch"
+                      Classes="compact" />
+              <Button Grid.Column="1"
+                      Content="Clear All Plots"
+                      Click="ClearAllPlots_Click"
+                      IsEnabled="{Binding HasSnapshots}"
+                      HorizontalAlignment="Stretch"
+                      Classes="compact" />
+            </Grid>
+          </Grid>
+        </Border>
+      </Grid>
+    </Grid>
+  </DockPanel>
+</Window>
