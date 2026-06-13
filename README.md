@@ -4,7 +4,7 @@
   <img src="assets/Icon.png" alt="DelimPlot icon" width="120">
 </p>
 
-DelimPlot is a standalone Windows desktop app for plotting columns from plain-text data files.
+DelimPlot is a standalone desktop app for plotting columns from plain-text data files on Windows and macOS.
 
 It is designed for quick scientific and engineering plotting workflows: import delimited text, choose one X column and one or more Y series, tune the style, and save multiple graphs in a reusable project file.
 
@@ -20,7 +20,7 @@ It is designed for quick scientific and engineering plotting workflows: import d
 - Manage multiple saved graphs in the Graph Browser.
 - Save the current plot as PNG.
 - Export and import `.delimplot` project files containing source data, graph settings, and graph thumbnails.
-- Open `.delimplot` files directly with the DelimPlot executable.
+- Open `.delimplot` files directly with the DelimPlot executable or macOS app bundle.
 - Render Chinese and other multilingual plot titles using system font selection.
 
 ## Screenshots
@@ -49,6 +49,7 @@ The sample project `samples/defaultProject.delimplot` can be opened directly wit
 - `src/DelimPlot.Plotting`: ScottPlot rendering helper.
 - `src/DelimPlot.App`: Avalonia desktop application.
 - `assets`: repository-level branding assets.
+- `build/macos`: macOS app bundle metadata and packaging script.
 - `samples`: example data files.
 - `screenshots`: release screenshots.
 
@@ -84,6 +85,25 @@ DelimPlot-latest-win-x64.exe
 
 These files are copied from the publish output before being attached to the GitHub release.
 
+## Publish macOS App Bundle
+
+The macOS release is built on Apple Silicon with the .NET 8 SDK. If .NET 8 was installed with Homebrew, the package script uses `/opt/homebrew/opt/dotnet@8/libexec/dotnet` by default. Override `DOTNET` when using another SDK path:
+
+```bash
+DOTNET=dotnet ./build/macos/package-osx-arm64.sh
+```
+
+The script publishes the app for `osx-arm64`, assembles a standard `.app` bundle, copies the required Avalonia/Skia native libraries, installs the macOS `.icns` icon, registers `.delimplot` documents in `Info.plist`, ad-hoc signs the bundle, and creates the release zip.
+
+The macOS release output is:
+
+```text
+artifacts/release/DelimPlot.app
+artifacts/release/DelimPlot-0.1.0-osx-arm64.zip
+```
+
+The `.app` bundle is useful for local smoke testing. Attach the zip to the GitHub release. Because the bundle is ad-hoc signed rather than Developer ID notarized, macOS may require right-clicking and choosing Open on first launch after download.
+
 ## Project Files
 
 Use `File -> Export Project...` to save a `.delimplot` file. This file bundles:
@@ -100,11 +120,11 @@ DelimPlot is licensed under the Apache License 2.0. See `LICENSE`.
 
 ## Technology And Third-Party Licenses
 
-DelimPlot is built with .NET 8, Avalonia UI, and ScottPlot. The Windows standalone executable includes the .NET runtime and required GUI/rendering dependencies.
+DelimPlot is built with .NET 8, Avalonia UI, and ScottPlot. The Windows standalone executable and macOS app bundle include the .NET runtime and required GUI/rendering dependencies.
 
 The direct NuGet dependencies are:
 
 - `Avalonia.Desktop`, `Avalonia.Themes.Fluent`, and `Avalonia.Fonts.Inter` under the MIT license.
 - `ScottPlot` and `ScottPlot.Avalonia` under the MIT license.
 
-The Windows publish output also includes permissive transitive dependencies, including SkiaSharp, HarfBuzzSharp, MicroCom.Runtime, Tmds.DBus.Protocol, System.IO.Pipelines, and Avalonia ANGLE Windows native assets. These are MIT or BSD-style licensed. No extra commercial license acquisition is required for normal use or redistribution, but third-party notices should be preserved. See `THIRD-PARTY-NOTICES.md`.
+The platform publish outputs also include permissive transitive dependencies, including SkiaSharp, HarfBuzzSharp, MicroCom.Runtime, Tmds.DBus.Protocol, System.IO.Pipelines, Avalonia native assets, and platform-specific rendering libraries. These are MIT or BSD-style licensed. No extra commercial license acquisition is required for normal use or redistribution, but third-party notices should be preserved. See `THIRD-PARTY-NOTICES.md`.

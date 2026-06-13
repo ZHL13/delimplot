@@ -10,6 +10,9 @@ Use this checklist before publishing a GitHub release.
 - Run a Release build.
 - Publish the Windows standalone executable.
 - Test opening a `.delimplot` file with `DelimPlot.exe`.
+- Publish the macOS app bundle on Apple Silicon.
+- Test opening the macOS `.app` directly.
+- Test opening a `.delimplot` file with the macOS app bundle.
 
 ## Build Commands
 
@@ -24,16 +27,29 @@ Copy-Item artifacts\win-x64\DelimPlot.exe artifacts\release\DelimPlot-0.1.0-win-
 Copy-Item artifacts\win-x64\DelimPlot.exe artifacts\release\DelimPlot-latest-win-x64.exe -Force
 ```
 
+```bash
+./build/macos/package-osx-arm64.sh
+```
+
 ## Release Artifact
 
-This release currently publishes Windows x64 only.
+This release publishes Windows x64 and macOS arm64.
 
-Attach these files to the GitHub release:
+Attach these Windows files to the GitHub release:
 
 ```text
 artifacts\release\DelimPlot-0.1.0-win-x64.exe
 artifacts\release\DelimPlot-latest-win-x64.exe
 ```
+
+Keep these macOS release outputs:
+
+```text
+artifacts/release/DelimPlot.app
+artifacts/release/DelimPlot-0.1.0-osx-arm64.zip
+```
+
+Attach the macOS zip to the GitHub release. The `.app` bundle is kept uncompressed in `artifacts/release` for local smoke testing.
 
 ## Suggested Tag
 
