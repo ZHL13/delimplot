@@ -133,7 +133,6 @@ The Linux release output is:
 artifacts/release/DelimPlot-0.1.0-linux-x64/
 artifacts/release/DelimPlot-0.1.0-linux-x64.tar.gz
 artifacts/release/DelimPlot-0.1.0-linux-x64.AppImage
-artifacts/release/DelimPlot-latest-linux-x64.AppImage
 ```
 
 Use the AppImage for a one-file desktop app. If the file manager does not launch downloaded executables by default, mark the AppImage as executable from the file properties dialog or run `chmod +x DelimPlot-0.1.0-linux-x64.AppImage`. Use the tarball as a fallback on systems that do not support AppImage/FUSE; after extraction, launch the bundled `DelimPlot` executable.

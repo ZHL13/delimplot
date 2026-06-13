@@ -62,7 +62,6 @@ Attach these Linux files to the GitHub release:
 
 ```text
 artifacts/release/DelimPlot-0.1.0-linux-x64.AppImage
-artifacts/release/DelimPlot-latest-linux-x64.AppImage
 artifacts/release/DelimPlot-0.1.0-linux-x64.tar.gz
 ```
 

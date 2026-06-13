@@ -113,7 +113,6 @@ APPRUN
 
   env ARCH=x86_64 APPIMAGE_EXTRACT_AND_RUN=1 "$APPIMAGETOOL" "$APPDIR" "$VERSIONED_APPIMAGE"
   chmod 0755 "$VERSIONED_APPIMAGE"
-  cp -p "$VERSIONED_APPIMAGE" "$LATEST_APPIMAGE"
 fi
 
 echo "Linux release outputs:"
@@ -121,5 +120,4 @@ echo "  $RELEASE_APP_DIR"
 echo "  $VERSIONED_TGZ"
 if [[ "$SKIP_APPIMAGE" != "true" ]]; then
   echo "  $VERSIONED_APPIMAGE"
-  echo "  $LATEST_APPIMAGE"
 fi
