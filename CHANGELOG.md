@@ -4,6 +4,10 @@ All notable changes to DelimPlot will be documented in this file.
 
 ## 0.1.1 - 2026-06-15
 
+### Added
+
+- Windows x64 standalone release assets: `DelimPlot-0.1.1-win-x64.exe` and `DelimPlot-latest-win-x64.exe`.
+
 ### Changed
 
 - Data import now accepts plain-text files with any file extension from the file picker, drag and drop, and startup file paths.

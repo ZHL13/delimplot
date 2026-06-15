@@ -2,6 +2,16 @@
 
 Use this checklist before publishing a GitHub release.
 
+## 0.1.1 Release Summary
+
+The `v0.1.1` GitHub release currently includes:
+
+- `DelimPlot-0.1.1-osx-arm64.zip`
+- `DelimPlot-0.1.1-win-x64.exe`
+- `DelimPlot-latest-win-x64.exe`
+
+When adding Windows assets to an existing release, keep the existing macOS asset attached.
+
 ## Before Release
 
 - Confirm `src/DelimPlot.App/DelimPlot.App.csproj` version fields are set to the release version.
@@ -40,7 +50,7 @@ Copy-Item artifacts\win-x64\DelimPlot.exe artifacts\release\DelimPlot-latest-win
 
 ## Release Artifact
 
-This release publishes Windows x64, macOS arm64, and Linux x64.
+This release publishes Windows x64 and macOS arm64 assets. Linux packaging commands are retained below for local or future Linux release preparation.
 
 Attach these Windows files to the GitHub release:
 
@@ -58,7 +68,7 @@ artifacts/release/DelimPlot-0.1.1-osx-arm64.zip
 
 Attach the macOS zip to the GitHub release. The `.app` bundle is kept uncompressed in `artifacts/release` for local smoke testing.
 
-Attach these Linux files to the GitHub release:
+Optional Linux files, if building Linux packages for a later release:
 
 ```text
 artifacts/release/DelimPlot-0.1.1-linux-x64.AppImage
