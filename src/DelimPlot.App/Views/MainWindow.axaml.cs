@@ -91,10 +91,9 @@ public sealed partial class MainWindow : Window
             AllowMultiple = true,
             FileTypeFilter =
             [
-                new FilePickerFileType("Text data")
+                new FilePickerFileType("All files")
                 {
-                    Patterns = ["*.txt", "*.dat", "*.csv", "*.tsv", "*"],
-                    MimeTypes = ["text/plain", "text/csv", "text/tab-separated-values"]
+                    Patterns = ["*"]
                 }
             ]
         });
@@ -405,7 +404,7 @@ public sealed partial class MainWindow : Window
             Children =
             {
                 new TextBlock { Text = "DelimPlot", FontSize = 18, FontWeight = Avalonia.Media.FontWeight.SemiBold },
-                new TextBlock { Text = "Version 0.1.0" },
+                new TextBlock { Text = "Version 0.1.1" },
                 new TextBlock { Text = "License: Apache-2.0" },
                 new TextBlock { Text = "Plain-text column plotting for desktop workflows.", Foreground = Brushes.DimGray },
                 closeButton

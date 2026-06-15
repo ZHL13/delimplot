@@ -16,7 +16,7 @@ VERSION="${VERSION:-}"
 if [[ -z "$VERSION" ]]; then
   VERSION="$("$DOTNET" msbuild "$ROOT_DIR/src/DelimPlot.App/DelimPlot.App.csproj" -getProperty:Version 2>/dev/null || true)"
 fi
-VERSION="${VERSION:-0.1.0}"
+VERSION="${VERSION:-0.1.1}"
 
 PUBLISH_DIR="$ROOT_DIR/artifacts/$RID"
 RELEASE_DIR="$ROOT_DIR/artifacts/release"

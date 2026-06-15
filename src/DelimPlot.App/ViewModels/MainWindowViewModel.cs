@@ -193,13 +193,12 @@ public sealed class MainWindowViewModel : ObservableObject
             .Where(path => !string.IsNullOrWhiteSpace(path))
             .Select(Path.GetFullPath)
             .Where(File.Exists)
-            .Where(IsAcceptedDataFile)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
         if (filePaths.Length == 0)
         {
-            StatusMessage = "No supported data files selected.";
+            StatusMessage = "No data files selected.";
             return;
         }
 
@@ -846,12 +845,6 @@ public sealed class MainWindowViewModel : ObservableObject
             name = name.Replace(invalidChar, '_');
 
         return string.IsNullOrWhiteSpace(name) ? fallback : name;
-    }
-
-    private static bool IsAcceptedDataFile(string path)
-    {
-        var extension = Path.GetExtension(path).ToLowerInvariant();
-        return extension is ".txt" or ".dat" or ".csv" or ".tsv" or "";
     }
 
     private sealed class ProjectFile

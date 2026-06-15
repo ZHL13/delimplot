@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 DOTNET="${DOTNET:-/opt/homebrew/opt/dotnet@8/libexec/dotnet}"
-VERSION="${VERSION:-0.1.0}"
+VERSION="${VERSION:-0.1.1}"
 RID="${RID:-osx-arm64}"
 
 PUBLISH_DIR="$ROOT_DIR/artifacts/$RID"

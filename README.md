@@ -10,8 +10,9 @@ It is designed for quick scientific and engineering plotting workflows: import d
 
 ## Features
 
-- Import `.txt`, `.dat`, `.csv`, and `.tsv` data files.
+- Import plain-text data files regardless of file extension.
 - Auto-detect comma, tab, semicolon, and whitespace delimiters.
+- Auto-detect CRLF, LF, and CR line endings before parsing.
 - Ignore common comment lines beginning with `#`, `//`, or `%`.
 - Preview parsed numeric rows before plotting.
 - Plot one X column against one or more Y columns.
@@ -80,7 +81,7 @@ artifacts\win-x64\DelimPlot.exe
 Release builds are published as:
 
 ```text
-DelimPlot-0.1.0-win-x64.exe
+DelimPlot-0.1.1-win-x64.exe
 DelimPlot-latest-win-x64.exe
 ```
 
@@ -100,7 +101,7 @@ The macOS release output is:
 
 ```text
 artifacts/release/DelimPlot.app
-artifacts/release/DelimPlot-0.1.0-osx-arm64.zip
+artifacts/release/DelimPlot-0.1.1-osx-arm64.zip
 ```
 
 The `.app` bundle is useful for local smoke testing. Attach the zip to the GitHub release. Because the bundle is ad-hoc signed rather than Developer ID notarized, macOS may require right-clicking and choosing Open on first launch after download.
@@ -130,12 +131,12 @@ Linux packaging intentionally publishes a self-contained app directory rather th
 The Linux release output is:
 
 ```text
-artifacts/release/DelimPlot-0.1.0-linux-x64/
-artifacts/release/DelimPlot-0.1.0-linux-x64.tar.gz
-artifacts/release/DelimPlot-0.1.0-linux-x64.AppImage
+artifacts/release/DelimPlot-0.1.1-linux-x64/
+artifacts/release/DelimPlot-0.1.1-linux-x64.tar.gz
+artifacts/release/DelimPlot-0.1.1-linux-x64.AppImage
 ```
 
-Use the AppImage for a one-file desktop app. If the file manager does not launch downloaded executables by default, mark the AppImage as executable from the file properties dialog or run `chmod +x DelimPlot-0.1.0-linux-x64.AppImage`. Use the tarball as a fallback on systems that do not support AppImage/FUSE; after extraction, launch the bundled `DelimPlot` executable.
+Use the AppImage for a one-file desktop app. If the file manager does not launch downloaded executables by default, mark the AppImage as executable from the file properties dialog or run `chmod +x DelimPlot-0.1.1-linux-x64.AppImage`. Use the tarball as a fallback on systems that do not support AppImage/FUSE; after extraction, launch the bundled `DelimPlot` executable.
 
 ## Project Files
 

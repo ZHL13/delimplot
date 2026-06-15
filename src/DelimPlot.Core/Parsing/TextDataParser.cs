@@ -16,8 +16,10 @@ public sealed class TextDataParser
     private static DataFile Parse(string filePath, CancellationToken cancellationToken)
     {
         var validLines = new List<string>();
+        var text = File.ReadAllText(filePath);
+        var newLine = DetectNewLine(text);
 
-        foreach (var rawLine in File.ReadLines(filePath))
+        foreach (var rawLine in SplitLines(text, newLine))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -101,6 +103,62 @@ public sealed class TextDataParser
     private static bool IsComment(string line)
     {
         return line.StartsWith('#') || line.StartsWith("//", StringComparison.Ordinal) || line.StartsWith('%');
+    }
+
+    private static string DetectNewLine(string text)
+    {
+        var crlfCount = 0;
+        var lfCount = 0;
+        var crCount = 0;
+
+        for (var i = 0; i < text.Length; i++)
+        {
+            var ch = text[i];
+            if (ch == '\r')
+            {
+                if (i + 1 < text.Length && text[i + 1] == '\n')
+                {
+                    crlfCount++;
+                    i++;
+                }
+                else
+                {
+                    crCount++;
+                }
+            }
+            else if (ch == '\n')
+            {
+                lfCount++;
+            }
+        }
+
+        if (crlfCount >= lfCount && crlfCount >= crCount && crlfCount > 0)
+            return "\r\n";
+
+        if (lfCount >= crCount && lfCount > 0)
+            return "\n";
+
+        return crCount > 0 ? "\r" : Environment.NewLine;
+    }
+
+    private static IEnumerable<string> SplitLines(string text, string newLine)
+    {
+        if (text.Length == 0)
+            yield break;
+
+        var start = 0;
+        while (start <= text.Length)
+        {
+            var index = text.IndexOf(newLine, start, StringComparison.Ordinal);
+            if (index < 0)
+                break;
+
+            yield return text[start..index];
+            start = index + newLine.Length;
+        }
+
+        if (start < text.Length)
+            yield return text[start..];
     }
 
     private static DelimiterKind DetectDelimiter(IEnumerable<string> lines)

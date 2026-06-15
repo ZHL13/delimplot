@@ -2,6 +2,13 @@
 
 All notable changes to DelimPlot will be documented in this file.
 
+## 0.1.1 - 2026-06-15
+
+### Changed
+
+- Data import now accepts plain-text files with any file extension from the file picker, drag and drop, and startup file paths.
+- Text parsing now detects CRLF, LF, and CR line endings before splitting lines.
+
 ## 0.1.0 - 2026-06-13
 
 ### Added
