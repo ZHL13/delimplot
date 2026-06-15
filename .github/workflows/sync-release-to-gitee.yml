@@ -1,0 +1,180 @@
+name: Sync Release to Gitee
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Python dependency
+        run: python -m pip install requests
+
+      - name: Sync GitHub Release to Gitee
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+          GITEE_OWNER: ZHL13
+          GITEE_REPO: delimplot
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python <<'PY'
+          import json
+          import os
+          import time
+          import urllib.parse
+          from pathlib import Path
+
+          import requests
+
+          gitee_token = os.environ["GITEE_TOKEN"]
+          gitee_owner = os.environ["GITEE_OWNER"]
+          gitee_repo = os.environ["GITEE_REPO"]
+          github_token = os.environ["GITHUB_TOKEN"]
+
+          event_path = Path(os.environ["GITHUB_EVENT_PATH"])
+          event = json.loads(event_path.read_text(encoding="utf-8"))
+          release = event["release"]
+
+          tag = release["tag_name"]
+          name = release.get("name") or tag
+          body = release.get("body") or ""
+          target = release.get("target_commitish") or "main"
+          prerelease = "true" if release.get("prerelease") else "false"
+
+          base = f"https://gitee.com/api/v5/repos/{gitee_owner}/{gitee_repo}"
+
+          def gitee_get_release_by_tag():
+              encoded_tag = urllib.parse.quote(tag, safe="")
+              r = requests.get(
+                  f"{base}/releases/tags/{encoded_tag}",
+                  params={"access_token": gitee_token},
+                  timeout=30,
+              )
+              if r.status_code == 200:
+                  return r.json()
+              if r.status_code == 404:
+                  return None
+              raise RuntimeError(f"Failed to query Gitee release: {r.status_code} {r.text}")
+
+          def gitee_create_release():
+              r = requests.post(
+                  f"{base}/releases",
+                  data={
+                      "access_token": gitee_token,
+                      "tag_name": tag,
+                      "name": name,
+                      "body": body,
+                      "target_commitish": target,
+                      "prerelease": prerelease,
+                  },
+                  timeout=30,
+              )
+              if r.status_code not in (200, 201):
+                  raise RuntimeError(f"Failed to create Gitee release: {r.status_code} {r.text}")
+              return r.json()
+
+          def gitee_update_release(release_id):
+              r = requests.patch(
+                  f"{base}/releases/{release_id}",
+                  data={
+                      "access_token": gitee_token,
+                      "tag_name": tag,
+                      "name": name,
+                      "body": body,
+                      "target_commitish": target,
+                      "prerelease": prerelease,
+                  },
+                  timeout=30,
+              )
+              if r.status_code not in (200, 201):
+                  raise RuntimeError(f"Failed to update Gitee release: {r.status_code} {r.text}")
+              return r.json()
+
+          def gitee_list_assets(release_id):
+              r = requests.get(
+                  f"{base}/releases/{release_id}/attach_files",
+                  params={"access_token": gitee_token},
+                  timeout=30,
+              )
+              if r.status_code != 200:
+                  return set()
+              items = r.json()
+              names = set()
+              for item in items:
+                  for key in ("name", "filename", "file_name"):
+                      if key in item:
+                          names.add(item[key])
+              return names
+
+          def download_github_asset(asset, output_path):
+              headers = {
+                  "Authorization": f"Bearer {github_token}",
+                  "Accept": "application/octet-stream",
+              }
+              r = requests.get(asset["url"], headers=headers, stream=True, timeout=120)
+              r.raise_for_status()
+
+              with open(output_path, "wb") as f:
+                  for chunk in r.iter_content(chunk_size=1024 * 1024):
+                      if chunk:
+                          f.write(chunk)
+
+          def upload_gitee_asset(release_id, file_path):
+              with open(file_path, "rb") as f:
+                  r = requests.post(
+                      f"{base}/releases/{release_id}/attach_files",
+                      data={"access_token": gitee_token},
+                      files={"file": (file_path.name, f)},
+                      timeout=180,
+                  )
+              if r.status_code not in (200, 201):
+                  raise RuntimeError(f"Failed to upload {file_path.name}: {r.status_code} {r.text}")
+
+          # Gitee mirror may need some time to receive the tag from GitHub.
+          gitee_release = None
+          last_error = None
+
+          for attempt in range(10):
+              try:
+                  gitee_release = gitee_get_release_by_tag()
+                  if gitee_release:
+                      gitee_release = gitee_update_release(gitee_release["id"])
+                  else:
+                      gitee_release = gitee_create_release()
+                  break
+              except Exception as e:
+                  last_error = e
+                  print(f"Attempt {attempt + 1}/10 failed: {e}")
+                  time.sleep(30)
+
+          if not gitee_release:
+              raise RuntimeError(f"Could not create/update Gitee release after retries: {last_error}")
+
+          release_id = gitee_release["id"]
+          existing_assets = gitee_list_assets(release_id)
+
+          assets = release.get("assets", [])
+          print(f"GitHub release assets: {len(assets)}")
+
+          for asset in assets:
+              filename = asset["name"]
+
+              if filename in existing_assets:
+                  print(f"Skip existing asset: {filename}")
+                  continue
+
+              path = Path(filename)
+              print(f"Downloading GitHub asset: {filename}")
+              download_github_asset(asset, path)
+
+              print(f"Uploading to Gitee: {filename}")
+              upload_gitee_asset(release_id, path)
+
+          print(f"Done: synced release {tag} to Gitee.")
+          PY
