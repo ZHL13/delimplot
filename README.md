@@ -8,13 +8,22 @@ DelimPlot is a standalone desktop app for plotting columns from plain-text data 
 
 It is designed for quick scientific and engineering plotting workflows: import delimited text, choose one X column and one or more Y series, tune the style, and save multiple graphs in a reusable project file.
 
+## Download
+
+Prebuilt standalone executables are published on [GitHub Releases](https://github.com/ZHL13/delimplot/releases). The Windows x64 build is self-contained and does not require the .NET runtime:
+
+- `DelimPlot-0.2.0-win-x64.exe` — versioned release build
+- `DelimPlot-latest-win-x64.exe` — rolling "latest" build
+
+macOS (Apple Silicon) and Linux packages are built with the scripts in `build/` and attached to releases as they become available. To build from source instead, see [Build](#build).
+
 ## Features
 
 - Import plain-text data files regardless of file extension.
 - Auto-detect comma, tab, semicolon, and whitespace delimiters.
 - Auto-detect CRLF, LF, and CR line endings before parsing.
 - Ignore common comment lines beginning with `#`, `//`, or `%`.
-- Preview parsed numeric rows before plotting.
+- Preview parsed data before plotting, including text columns.
 - Import files with mixed text and numeric columns: text columns are shown in the preview and skipped when plotting.
 - Plot one X column against one or more Y columns.
 - Configure line, scatter, and line + marker styles.

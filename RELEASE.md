@@ -6,11 +6,22 @@ Use this checklist before publishing a GitHub release.
 
 The `v0.2.0` GitHub release currently includes:
 
-- `DelimPlot-0.2.0-osx-arm64.zip`
 - `DelimPlot-0.2.0-win-x64.exe`
 - `DelimPlot-latest-win-x64.exe`
 
-When adding Windows assets to an existing release, keep the existing macOS asset attached.
+macOS and Linux assets are pending and can be attached to this release later without recreating it.
+
+## 0.2.0 Changes
+
+### Added
+
+- Import files with mixed text and numeric columns. Text columns are kept in the preview and skipped when plotting, so CSV logs with categorical columns now import successfully.
+
+### Fixed
+
+- Rows with trailing empty fields no longer fail to import due to a column-count mismatch.
+- A single non-numeric column no longer blocks the entire file from being imported.
+- Sparse numeric columns are NaN-padded so other columns still plot, with gaps skipped.
 
 ## Before Release
 
@@ -50,7 +61,7 @@ Copy-Item artifacts\win-x64\DelimPlot.exe artifacts\release\DelimPlot-latest-win
 
 ## Release Artifact
 
-This release publishes Windows x64 and macOS arm64 assets. Linux packaging commands are retained below for local or future Linux release preparation.
+The 0.2.0 release publishes Windows x64 assets. macOS and Linux packaging commands are retained below for local or future release preparation.
 
 Attach these Windows files to the GitHub release:
 
