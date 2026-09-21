@@ -2,6 +2,17 @@
 
 All notable changes to DelimPlot will be documented in this file.
 
+## 0.2.0 - 2026-09-21
+
+### Added
+
+- Import files with mixed text and numeric columns. Text columns are kept in the preview and skipped when plotting, so CSV logs with categorical columns now import successfully.
+
+### Fixed
+
+- Rows with trailing empty fields no longer fail to import due to a column-count mismatch.
+- A single non-numeric column no longer blocks the entire file from being imported.
+
 ## 0.1.1 - 2026-06-15
 
 ### Added

@@ -25,11 +25,16 @@ public static class PlotRenderer
         {
             var yColumn = dataFile.Columns[ClampIndex(seriesConfig.YColumnIndex, dataFile.Columns.Count)];
             var color = ParseColor(seriesConfig.Color);
+            var (xs, ys) = BuildAlignedSeries(xColumn.Values, yColumn.Values);
+
+            if (xs.Length == 0)
+                continue;
+
             var scatter = seriesConfig.Style switch
             {
-                PlotSeriesStyle.ScatterPoints => plot.Add.ScatterPoints(xColumn.Values, yColumn.Values, color),
-                PlotSeriesStyle.LineAndPoints => plot.Add.Scatter(xColumn.Values, yColumn.Values, color),
-                _ => plot.Add.ScatterLine(xColumn.Values, yColumn.Values, color)
+                PlotSeriesStyle.ScatterPoints => plot.Add.ScatterPoints(xs, ys, color),
+                PlotSeriesStyle.LineAndPoints => plot.Add.Scatter(xs, ys, color),
+                _ => plot.Add.ScatterLine(xs, ys, color)
             };
 
             scatter.LegendText = yColumn.Name;
@@ -61,6 +66,24 @@ public static class PlotRenderer
         plot.Axes.Bottom.Label.SetBestFont();
         plot.Axes.Left.Label.SetBestFont();
         plot.Legend.SetBestFontOnEachRender = true;
+    }
+
+    private static (double[] Xs, double[] Ys) BuildAlignedSeries(double[] xValues, double[] yValues)
+    {
+        var length = Math.Min(xValues.Length, yValues.Length);
+        var xs = new List<double>(length);
+        var ys = new List<double>(length);
+
+        for (var i = 0; i < length; i++)
+        {
+            if (double.IsNaN(xValues[i]) || double.IsNaN(yValues[i]))
+                continue;
+
+            xs.Add(xValues[i]);
+            ys.Add(yValues[i]);
+        }
+
+        return (xs.ToArray(), ys.ToArray());
     }
 
     private static int ClampIndex(int index, int count)

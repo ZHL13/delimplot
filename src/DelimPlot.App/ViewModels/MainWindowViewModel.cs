@@ -654,7 +654,7 @@ public sealed class MainWindowViewModel : ObservableObject
                 foreach (var column in dataFile.Columns)
                     Columns.Add(new ColumnOption(column.Index, column.Name));
 
-                PreviewRows.Add(new PreviewRowViewModel(dataFile.Columns.Select(column => column.Name)));
+                PreviewRows.Add(new PreviewRowViewModel(dataFile.PreviewColumns));
                 foreach (var row in dataFile.PreviewRows)
                     PreviewRows.Add(new PreviewRowViewModel(row));
 
@@ -703,7 +703,7 @@ public sealed class MainWindowViewModel : ObservableObject
             foreach (var column in dataFile.Columns)
                 Columns.Add(new ColumnOption(column.Index, column.Name));
 
-            PreviewRows.Add(new PreviewRowViewModel(dataFile.Columns.Select(column => column.Name)));
+            PreviewRows.Add(new PreviewRowViewModel(dataFile.PreviewColumns));
             foreach (var row in dataFile.PreviewRows)
                 PreviewRows.Add(new PreviewRowViewModel(row));
 

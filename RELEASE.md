@@ -2,12 +2,12 @@
 
 Use this checklist before publishing a GitHub release.
 
-## 0.1.1 Release Summary
+## 0.2.0 Release Summary
 
-The `v0.1.1` GitHub release currently includes:
+The `v0.2.0` GitHub release currently includes:
 
-- `DelimPlot-0.1.1-osx-arm64.zip`
-- `DelimPlot-0.1.1-win-x64.exe`
+- `DelimPlot-0.2.0-osx-arm64.zip`
+- `DelimPlot-0.2.0-win-x64.exe`
 - `DelimPlot-latest-win-x64.exe`
 
 When adding Windows assets to an existing release, keep the existing macOS asset attached.
@@ -36,7 +36,7 @@ dotnet build DelimPlot.sln --configuration Release
 ```powershell
 dotnet publish src\DelimPlot.App\DelimPlot.App.csproj --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -p:PublishReadyToRun=false -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts\win-x64
 New-Item -ItemType Directory -Force -Path artifacts\release | Out-Null
-Copy-Item artifacts\win-x64\DelimPlot.exe artifacts\release\DelimPlot-0.1.1-win-x64.exe -Force
+Copy-Item artifacts\win-x64\DelimPlot.exe artifacts\release\DelimPlot-0.2.0-win-x64.exe -Force
 Copy-Item artifacts\win-x64\DelimPlot.exe artifacts\release\DelimPlot-latest-win-x64.exe -Force
 ```
 
@@ -55,7 +55,7 @@ This release publishes Windows x64 and macOS arm64 assets. Linux packaging comma
 Attach these Windows files to the GitHub release:
 
 ```text
-artifacts\release\DelimPlot-0.1.1-win-x64.exe
+artifacts\release\DelimPlot-0.2.0-win-x64.exe
 artifacts\release\DelimPlot-latest-win-x64.exe
 ```
 
@@ -63,7 +63,7 @@ Keep these macOS release outputs:
 
 ```text
 artifacts/release/DelimPlot.app
-artifacts/release/DelimPlot-0.1.1-osx-arm64.zip
+artifacts/release/DelimPlot-0.2.0-osx-arm64.zip
 ```
 
 Attach the macOS zip to the GitHub release. The `.app` bundle is kept uncompressed in `artifacts/release` for local smoke testing.
@@ -71,12 +71,12 @@ Attach the macOS zip to the GitHub release. The `.app` bundle is kept uncompress
 Optional Linux files, if building Linux packages for a later release:
 
 ```text
-artifacts/release/DelimPlot-0.1.1-linux-x64.AppImage
-artifacts/release/DelimPlot-0.1.1-linux-x64.tar.gz
+artifacts/release/DelimPlot-0.2.0-linux-x64.AppImage
+artifacts/release/DelimPlot-0.2.0-linux-x64.tar.gz
 ```
 
 ## Suggested Tag
 
 ```text
-v0.1.1
+v0.2.0
 ```
