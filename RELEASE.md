@@ -23,6 +23,12 @@ macOS and Linux assets are pending and can be attached to this release later wit
 
 - Project files now store axis scales and series Y axis side (project format version 2). Older projects import with linear axes and left-side series.
 
+### Fixed
+
+- Switching between linear and log scale now re-fits the axis limits instead of leaving the data squeezed together.
+- Tick labels reset to automatic numeric ticks when switching back to linear.
+- Non-positive values are clamped to 1e-13 in log mode to avoid axis range errors.
+
 ## Before Release
 
 - Confirm `src/DelimPlot.App/DelimPlot.App.csproj` version fields are set to the release version.

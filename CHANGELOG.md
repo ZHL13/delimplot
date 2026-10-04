@@ -14,6 +14,12 @@ All notable changes to DelimPlot will be documented in this file.
 
 - Project files now store axis scales and series Y axis side (project format version 2). Older projects import with linear axes and left-side series.
 
+### Fixed
+
+- Switching between linear and log scale now re-fits the axis limits instead of leaving the data squeezed together.
+- Tick labels reset to automatic numeric ticks when switching back to linear.
+- Non-positive values are clamped to 1e-13 in log mode to avoid axis range errors.
+
 ## 0.2.0 - 2026-09-21
 
 ### Added

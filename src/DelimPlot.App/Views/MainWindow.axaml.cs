@@ -442,7 +442,12 @@ public sealed partial class MainWindow : Window
         e.Handled = true;
     }
 
-    private sealed record PlotShape(string FilePath, int XColumnIndex, string SeriesColumns)
+    private sealed record PlotShape(
+        string FilePath,
+        int XColumnIndex,
+        string SeriesColumns,
+        string AxisScales,
+        string SeriesYAxisSides)
     {
         public static PlotShape? FromConfig(PlotConfig? config)
         {
@@ -450,7 +455,9 @@ public sealed partial class MainWindow : Window
                 return null;
 
             var seriesColumns = string.Join(",", config.Series.Select(series => series.YColumnIndex));
-            return new PlotShape(config.DataFile.FilePath, config.XColumnIndex, seriesColumns);
+            var axisScales = $"{config.XAxisScale}|{config.YLeftAxisScale}|{config.YRightAxisScale}";
+            var seriesYAxisSides = string.Join(",", config.Series.Select(series => series.YAxisSide));
+            return new PlotShape(config.DataFile.FilePath, config.XColumnIndex, seriesColumns, axisScales, seriesYAxisSides);
         }
     }
 }

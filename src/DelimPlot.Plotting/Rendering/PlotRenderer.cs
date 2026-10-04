@@ -1,11 +1,14 @@
 using System.Globalization;
 using DelimPlot.Core.Models;
 using ScottPlot;
+using ScottPlot.TickGenerators;
 
 namespace DelimPlot.Plotting.Rendering;
 
 public static class PlotRenderer
 {
+    private const double LogFloor = 1e-13;
+
     public static void Render(Plot plot, PlotConfig? config, bool autoScale = true)
     {
         plot.Clear();
@@ -65,6 +68,7 @@ public static class PlotRenderer
         if (config.Series.Count > 1)
             plot.ShowLegend();
 
+        ResetTickGenerators(plot);
         ApplyTextFonts(plot);
 
         if (autoScale)
@@ -89,6 +93,13 @@ public static class PlotRenderer
         plot.Legend.SetBestFontOnEachRender = true;
     }
 
+    private static void ResetTickGenerators(Plot plot)
+    {
+        plot.Axes.Bottom.TickGenerator = new NumericAutomatic();
+        plot.Axes.Left.TickGenerator = new NumericAutomatic();
+        plot.Axes.Right.TickGenerator = new NumericAutomatic();
+    }
+
     private static (double[] Xs, double[] Ys) BuildAlignedSeries(
         double[] xValues, double[] yValues, bool xIsLog, bool yIsLog)
     {
@@ -105,20 +116,10 @@ public static class PlotRenderer
                 continue;
 
             if (xIsLog)
-            {
-                if (x <= 0)
-                    continue;
-
-                x = Math.Log10(x);
-            }
+                x = Math.Log10(Math.Max(x, LogFloor));
 
             if (yIsLog)
-            {
-                if (y <= 0)
-                    continue;
-
-                y = Math.Log10(y);
-            }
+                y = Math.Log10(Math.Max(y, LogFloor));
 
             xs.Add(x);
             ys.Add(y);
