@@ -7,6 +7,7 @@ public sealed class PlotSeriesConfig
     public string Color { get; set; } = "#2563EB";
     public double LineWidth { get; set; } = 2;
     public double MarkerSize { get; set; } = 5;
+    public YAxisSide YAxisSide { get; set; } = YAxisSide.Left;
 
     public PlotSeriesConfig Clone()
     {
@@ -16,7 +17,8 @@ public sealed class PlotSeriesConfig
             Style = Style,
             Color = Color,
             LineWidth = LineWidth,
-            MarkerSize = MarkerSize
+            MarkerSize = MarkerSize,
+            YAxisSide = YAxisSide
         };
     }
 }

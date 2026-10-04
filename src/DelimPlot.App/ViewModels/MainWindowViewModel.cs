@@ -10,7 +10,7 @@ namespace DelimPlot.App.ViewModels;
 public sealed class MainWindowViewModel : ObservableObject
 {
     private const string ProjectFormat = "DelimPlot.Project";
-    private const int ProjectVersion = 1;
+    private const int ProjectVersion = 2;
 
     private static readonly JsonSerializerOptions ProjectJsonOptions = new()
     {
@@ -27,6 +27,9 @@ public sealed class MainWindowViewModel : ObservableObject
     private string _plotTitle = string.Empty;
     private string _xAxisLabel = string.Empty;
     private string _yAxisLabel = string.Empty;
+    private AxisScaleOption _selectedXAxisScale = null!;
+    private AxisScaleOption _selectedYLeftAxisScale = null!;
+    private AxisScaleOption _selectedYRightAxisScale = null!;
     private bool _isLoading;
     private bool _canSavePlot;
     private bool _loadingConfig;
@@ -34,6 +37,10 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public MainWindowViewModel()
     {
+        _selectedXAxisScale = AxisScaleOptions[0];
+        _selectedYLeftAxisScale = AxisScaleOptions[0];
+        _selectedYRightAxisScale = AxisScaleOptions[0];
+
         NewPlotCommand = new RelayCommand(_ => NewPlotSlot());
         AddSeriesCommand = new RelayCommand(_ => AddSeries(), _ => SelectedFile is not null);
         ConfirmPlotCommand = new RelayCommand(_ => ConfirmPlot(), _ => CurrentPlotConfig is not null);
@@ -64,6 +71,12 @@ public sealed class MainWindowViewModel : ObservableObject
         "#0891B2",
         "#111827",
         "#DB2777"
+    ];
+
+    public IReadOnlyList<AxisScaleOption> AxisScaleOptions { get; } =
+    [
+        new(AxisScale.Linear, "linear"),
+        new(AxisScale.Log, "log")
     ];
 
     public RelayCommand NewPlotCommand { get; }
@@ -155,6 +168,36 @@ public sealed class MainWindowViewModel : ObservableObject
         set
         {
             if (SetProperty(ref _yAxisLabel, value))
+                NotifyPlotConfigChanged();
+        }
+    }
+
+    public AxisScaleOption SelectedXAxisScale
+    {
+        get => _selectedXAxisScale;
+        set
+        {
+            if (SetProperty(ref _selectedXAxisScale, value))
+                NotifyPlotConfigChanged();
+        }
+    }
+
+    public AxisScaleOption SelectedYLeftAxisScale
+    {
+        get => _selectedYLeftAxisScale;
+        set
+        {
+            if (SetProperty(ref _selectedYLeftAxisScale, value))
+                NotifyPlotConfigChanged();
+        }
+    }
+
+    public AxisScaleOption SelectedYRightAxisScale
+    {
+        get => _selectedYRightAxisScale;
+        set
+        {
+            if (SetProperty(ref _selectedYRightAxisScale, value))
                 NotifyPlotConfigChanged();
         }
     }
@@ -323,6 +366,9 @@ public sealed class MainWindowViewModel : ObservableObject
             PlotTitle = string.Empty;
             XAxisLabel = string.Empty;
             YAxisLabel = string.Empty;
+            SelectedXAxisScale = AxisScaleOptions[0];
+            SelectedYLeftAxisScale = AxisScaleOptions[0];
+            SelectedYRightAxisScale = AxisScaleOptions[0];
             _plotCounter = 0;
 
             for (var i = 0; i < project.Files.Count; i++)
@@ -364,13 +410,17 @@ public sealed class MainWindowViewModel : ObservableObject
                         Title = graph.Title,
                         XAxisLabel = graph.XAxisLabel,
                         YAxisLabel = graph.YAxisLabel,
+                        XAxisScale = graph.XAxisScale,
+                        YLeftAxisScale = graph.YLeftAxisScale,
+                        YRightAxisScale = graph.YRightAxisScale,
                         Series = graph.Series.Select(series => new PlotSeriesConfig
                         {
                             YColumnIndex = series.YColumnIndex,
                             Style = series.Style,
                             Color = series.Color,
                             LineWidth = series.LineWidth,
-                            MarkerSize = series.MarkerSize
+                            MarkerSize = series.MarkerSize,
+                            YAxisSide = series.YAxisSide
                         }).ToList()
                     };
 
@@ -648,6 +698,9 @@ public sealed class MainWindowViewModel : ObservableObject
                 PlotTitle = string.Empty;
                 XAxisLabel = string.Empty;
                 YAxisLabel = string.Empty;
+                SelectedXAxisScale = AxisScaleOptions[0];
+                SelectedYLeftAxisScale = AxisScaleOptions[0];
+                SelectedYRightAxisScale = AxisScaleOptions[0];
             }
             else
             {
@@ -673,6 +726,9 @@ public sealed class MainWindowViewModel : ObservableObject
                 PlotTitle = dataFile.FileName;
                 XAxisLabel = SelectedXColumn?.Name ?? string.Empty;
                 YAxisLabel = defaultYColumn?.Name ?? string.Empty;
+                SelectedXAxisScale = AxisScaleOptions[0];
+                SelectedYLeftAxisScale = AxisScaleOptions[0];
+                SelectedYRightAxisScale = AxisScaleOptions[0];
             }
         }
         finally
@@ -713,6 +769,9 @@ public sealed class MainWindowViewModel : ObservableObject
             PlotTitle = snapshot.PlotConfig.Title;
             XAxisLabel = snapshot.PlotConfig.XAxisLabel;
             YAxisLabel = snapshot.PlotConfig.YAxisLabel;
+            SelectedXAxisScale = AxisScaleOptions.First(option => option.Scale == snapshot.PlotConfig.XAxisScale);
+            SelectedYLeftAxisScale = AxisScaleOptions.First(option => option.Scale == snapshot.PlotConfig.YLeftAxisScale);
+            SelectedYRightAxisScale = AxisScaleOptions.First(option => option.Scale == snapshot.PlotConfig.YRightAxisScale);
 
             foreach (var series in snapshot.PlotConfig.Series)
                 Series.Add(new PlotSeriesConfigViewModel(this, series));
@@ -746,7 +805,10 @@ public sealed class MainWindowViewModel : ObservableObject
             Series = series,
             Title = PlotTitle,
             XAxisLabel = XAxisLabel,
-            YAxisLabel = YAxisLabel
+            YAxisLabel = YAxisLabel,
+            XAxisScale = SelectedXAxisScale.Scale,
+            YLeftAxisScale = SelectedYLeftAxisScale.Scale,
+            YRightAxisScale = SelectedYRightAxisScale.Scale
         };
     }
 
@@ -810,13 +872,17 @@ public sealed class MainWindowViewModel : ObservableObject
         graph.Title = config.Title;
         graph.XAxisLabel = config.XAxisLabel;
         graph.YAxisLabel = config.YAxisLabel;
+        graph.XAxisScale = config.XAxisScale;
+        graph.YLeftAxisScale = config.YLeftAxisScale;
+        graph.YRightAxisScale = config.YRightAxisScale;
         graph.Series = config.Series.Select(series => new ProjectSeries
         {
             YColumnIndex = series.YColumnIndex,
             Style = series.Style,
             Color = series.Color,
             LineWidth = series.LineWidth,
-            MarkerSize = series.MarkerSize
+            MarkerSize = series.MarkerSize,
+            YAxisSide = series.YAxisSide
         }).ToList();
 
         return graph;
@@ -876,6 +942,9 @@ public sealed class MainWindowViewModel : ObservableObject
         public string Title { get; set; } = string.Empty;
         public string XAxisLabel { get; set; } = string.Empty;
         public string YAxisLabel { get; set; } = string.Empty;
+        public AxisScale XAxisScale { get; set; } = AxisScale.Linear;
+        public AxisScale YLeftAxisScale { get; set; } = AxisScale.Linear;
+        public AxisScale YRightAxisScale { get; set; } = AxisScale.Linear;
         public List<ProjectSeries> Series { get; set; } = [];
         public string? ThumbnailPngBase64 { get; set; }
     }
@@ -887,5 +956,6 @@ public sealed class MainWindowViewModel : ObservableObject
         public string Color { get; set; } = "#2563EB";
         public double LineWidth { get; set; } = 2;
         public double MarkerSize { get; set; } = 5;
+        public YAxisSide YAxisSide { get; set; } = YAxisSide.Left;
     }
 }

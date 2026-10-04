@@ -2,6 +2,18 @@
 
 All notable changes to DelimPlot will be documented in this file.
 
+## 0.2.1 - 2026-10-04
+
+### Added
+
+- Linear/log scale toggle for the X axis and the left and right Y axes.
+- Assign each Y series to the left or right Y axis for dual-axis plots.
+- The right Y axis is labeled and only shown when at least one series uses it.
+
+### Changed
+
+- Project files now store axis scales and series Y axis side (project format version 2). Older projects import with linear axes and left-side series.
+
 ## 0.2.0 - 2026-09-21
 
 ### Added

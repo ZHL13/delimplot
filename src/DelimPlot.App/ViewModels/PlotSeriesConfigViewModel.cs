@@ -8,6 +8,7 @@ public sealed class PlotSeriesConfigViewModel : ObservableObject
     private readonly MainWindowViewModel _owner;
     private ColumnOption? _selectedYColumn;
     private PlotStyleOption _selectedStyleOption;
+    private YAxisSideOption _selectedYAxisSide;
     private string _color;
     private double _lineWidth;
     private double _markerSize;
@@ -18,6 +19,7 @@ public sealed class PlotSeriesConfigViewModel : ObservableObject
         _owner = owner;
         _selectedYColumn = owner.Columns.FirstOrDefault(column => column.Index == config.YColumnIndex);
         _selectedStyleOption = StyleOptions.First(option => option.Style == config.Style);
+        _selectedYAxisSide = YAxisSideOptions.First(option => option.Side == config.YAxisSide);
         _color = config.Color;
         _lineWidth = config.LineWidth;
         _markerSize = config.MarkerSize;
@@ -31,6 +33,12 @@ public sealed class PlotSeriesConfigViewModel : ObservableObject
         new(PlotSeriesStyle.Line, "line"),
         new(PlotSeriesStyle.ScatterPoints, "scatter points"),
         new(PlotSeriesStyle.LineAndPoints, "line + points")
+    ];
+
+    public IReadOnlyList<YAxisSideOption> YAxisSideOptions { get; } =
+    [
+        new(YAxisSide.Left, "left"),
+        new(YAxisSide.Right, "right")
     ];
 
     public IReadOnlyList<string> ColorOptions => _owner.ColorOptions;
@@ -53,6 +61,16 @@ public sealed class PlotSeriesConfigViewModel : ObservableObject
         set
         {
             if (SetProperty(ref _selectedStyleOption, value))
+                _owner.NotifyPlotConfigChanged();
+        }
+    }
+
+    public YAxisSideOption SelectedYAxisSide
+    {
+        get => _selectedYAxisSide;
+        set
+        {
+            if (SetProperty(ref _selectedYAxisSide, value))
                 _owner.NotifyPlotConfigChanged();
         }
     }
@@ -105,7 +123,8 @@ public sealed class PlotSeriesConfigViewModel : ObservableObject
             Style = SelectedStyleOption.Style,
             Color = Color,
             LineWidth = Math.Max(0.5, LineWidth),
-            MarkerSize = Math.Max(1, MarkerSize)
+            MarkerSize = Math.Max(1, MarkerSize),
+            YAxisSide = SelectedYAxisSide.Side
         };
     }
 }

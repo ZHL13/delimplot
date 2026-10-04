@@ -288,6 +288,45 @@
                 </StackPanel>
               </Grid>
 
+              <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8" Margin="0,8,0,0">
+                <StackPanel>
+                  <TextBlock Text="X Scale" Classes="field-label" Margin="0,0,0,3" />
+                  <ComboBox ItemsSource="{Binding AxisScaleOptions}"
+                            SelectedItem="{Binding SelectedXAxisScale}"
+                            HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Name}" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                  <TextBlock Text="Y Left Scale" Classes="field-label" Margin="0,0,0,3" />
+                  <ComboBox ItemsSource="{Binding AxisScaleOptions}"
+                            SelectedItem="{Binding SelectedYLeftAxisScale}"
+                            HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Name}" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                  <TextBlock Text="Y Right Scale" Classes="field-label" Margin="0,0,0,3" />
+                  <ComboBox ItemsSource="{Binding AxisScaleOptions}"
+                            SelectedItem="{Binding SelectedYRightAxisScale}"
+                            HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Name}" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </StackPanel>
+              </Grid>
+
               <Grid ColumnDefinitions="*,Auto" Margin="0,12,0,6">
                 <TextBlock Text="Y Series" Classes="panel-title" Margin="0" VerticalAlignment="Center" />
                 <Button Grid.Column="1" Content="+" Command="{Binding AddSeriesCommand}" Classes="compact" />
@@ -334,6 +373,17 @@
                             </ComboBox>
                           </StackPanel>
                         </Grid>
+
+                        <TextBlock Text="Y Axis" Classes="field-label" Margin="0,6,0,3" />
+                        <ComboBox ItemsSource="{Binding YAxisSideOptions}"
+                                  SelectedItem="{Binding SelectedYAxisSide}"
+                                  HorizontalAlignment="Stretch">
+                          <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                              <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                          </ComboBox.ItemTemplate>
+                        </ComboBox>
 
                         <TextBlock Text="Color" Classes="field-label" Margin="0,6,0,3" />
                         <ComboBox ItemsSource="{Binding ColorOptions}"

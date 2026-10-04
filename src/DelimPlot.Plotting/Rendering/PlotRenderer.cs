@@ -1,3 +1,4 @@
+using System.Globalization;
 using DelimPlot.Core.Models;
 using ScottPlot;
 
@@ -21,11 +22,20 @@ public static class PlotRenderer
         var dataFile = config.DataFile;
         var xColumn = dataFile.Columns[ClampIndex(config.XColumnIndex, dataFile.Columns.Count)];
 
+        var xIsLog = config.XAxisScale == AxisScale.Log;
+        var hasLeftSeries = config.Series.Any(series => series.YAxisSide == YAxisSide.Left);
+        var hasRightSeries = config.Series.Any(series => series.YAxisSide == YAxisSide.Right);
+
         foreach (var seriesConfig in config.Series)
         {
             var yColumn = dataFile.Columns[ClampIndex(seriesConfig.YColumnIndex, dataFile.Columns.Count)];
             var color = ParseColor(seriesConfig.Color);
-            var (xs, ys) = BuildAlignedSeries(xColumn.Values, yColumn.Values);
+            var isRight = seriesConfig.YAxisSide == YAxisSide.Right;
+            var yIsLog = isRight
+                ? config.YRightAxisScale == AxisScale.Log
+                : config.YLeftAxisScale == AxisScale.Log;
+
+            var (xs, ys) = BuildAlignedSeries(xColumn.Values, yColumn.Values, xIsLog, yIsLog);
 
             if (xs.Length == 0)
                 continue;
@@ -37,6 +47,7 @@ public static class PlotRenderer
                 _ => plot.Add.ScatterLine(xs, ys, color)
             };
 
+            scatter.Axes.YAxis = isRight ? plot.Axes.Right : plot.Axes.Left;
             scatter.LegendText = yColumn.Name;
             scatter.LineWidth = seriesConfig.Style == PlotSeriesStyle.ScatterPoints
                 ? 0
@@ -48,16 +59,25 @@ public static class PlotRenderer
 
         plot.Title(string.IsNullOrWhiteSpace(config.Title) ? dataFile.FileName : config.Title);
         plot.XLabel(string.IsNullOrWhiteSpace(config.XAxisLabel) ? xColumn.Name : config.XAxisLabel);
-        plot.YLabel(config.Series.Count == 1
-            ? dataFile.Columns[ClampIndex(config.Series[0].YColumnIndex, dataFile.Columns.Count)].Name
-            : string.IsNullOrWhiteSpace(config.YAxisLabel) ? "Y" : config.YAxisLabel);
+        plot.Axes.Left.Label.Text = hasLeftSeries ? ResolveYAxisLabel(config, YAxisSide.Left, dataFile) : string.Empty;
+        plot.Axes.Right.Label.Text = hasRightSeries ? ResolveYAxisLabel(config, YAxisSide.Right, dataFile) : string.Empty;
 
         if (config.Series.Count > 1)
             plot.ShowLegend();
 
         ApplyTextFonts(plot);
+
         if (autoScale)
             plot.Axes.AutoScale();
+
+        if (xIsLog)
+            ApplyLogTicks(plot.Axes.Bottom);
+
+        if (hasLeftSeries && config.YLeftAxisScale == AxisScale.Log)
+            ApplyLogTicks(plot.Axes.Left);
+
+        if (hasRightSeries && config.YRightAxisScale == AxisScale.Log)
+            ApplyLogTicks(plot.Axes.Right);
     }
 
     private static void ApplyTextFonts(Plot plot)
@@ -65,10 +85,12 @@ public static class PlotRenderer
         plot.Axes.Title.Label.SetBestFont();
         plot.Axes.Bottom.Label.SetBestFont();
         plot.Axes.Left.Label.SetBestFont();
+        plot.Axes.Right.Label.SetBestFont();
         plot.Legend.SetBestFontOnEachRender = true;
     }
 
-    private static (double[] Xs, double[] Ys) BuildAlignedSeries(double[] xValues, double[] yValues)
+    private static (double[] Xs, double[] Ys) BuildAlignedSeries(
+        double[] xValues, double[] yValues, bool xIsLog, bool yIsLog)
     {
         var length = Math.Min(xValues.Length, yValues.Length);
         var xs = new List<double>(length);
@@ -76,14 +98,86 @@ public static class PlotRenderer
 
         for (var i = 0; i < length; i++)
         {
-            if (double.IsNaN(xValues[i]) || double.IsNaN(yValues[i]))
+            var x = xValues[i];
+            var y = yValues[i];
+
+            if (double.IsNaN(x) || double.IsNaN(y))
                 continue;
 
-            xs.Add(xValues[i]);
-            ys.Add(yValues[i]);
+            if (xIsLog)
+            {
+                if (x <= 0)
+                    continue;
+
+                x = Math.Log10(x);
+            }
+
+            if (yIsLog)
+            {
+                if (y <= 0)
+                    continue;
+
+                y = Math.Log10(y);
+            }
+
+            xs.Add(x);
+            ys.Add(y);
         }
 
         return (xs.ToArray(), ys.ToArray());
+    }
+
+    private static string ResolveYAxisLabel(PlotConfig config, YAxisSide side, DataFile dataFile)
+    {
+        var sideSeries = config.Series.Where(series => series.YAxisSide == side).ToList();
+
+        if (sideSeries.Count == 1)
+        {
+            var column = dataFile.Columns[ClampIndex(sideSeries[0].YColumnIndex, dataFile.Columns.Count)];
+            return column.Name;
+        }
+
+        if (side == YAxisSide.Left)
+            return string.IsNullOrWhiteSpace(config.YAxisLabel) ? "Y" : config.YAxisLabel;
+
+        return "Y (right)";
+    }
+
+    private static void ApplyLogTicks(IAxis axis)
+    {
+        var min = axis.Min;
+        var max = axis.Max;
+
+        if (!double.IsFinite(min) || !double.IsFinite(max) || max <= min)
+            return;
+
+        var minExponent = (int)Math.Floor(min);
+        var maxExponent = (int)Math.Ceiling(max);
+
+        if (maxExponent - minExponent < 1)
+        {
+            minExponent--;
+            maxExponent++;
+        }
+
+        var tickPositions = new List<double>();
+        var tickLabels = new List<string>();
+
+        for (var exponent = minExponent; exponent <= maxExponent; exponent++)
+        {
+            tickPositions.Add(exponent);
+            tickLabels.Add(FormatPowerLabel(exponent));
+        }
+
+        axis.SetTicks(tickPositions.ToArray(), tickLabels.ToArray());
+    }
+
+    private static string FormatPowerLabel(int exponent)
+    {
+        if (exponent is >= -3 and <= 3)
+            return Math.Pow(10, exponent).ToString("0.###", CultureInfo.InvariantCulture);
+
+        return $"1e{exponent}";
     }
 
     private static int ClampIndex(int index, int count)
