@@ -18,6 +18,7 @@ macOS and Linux assets are pending and can be attached to this release later wit
 - Linear/log scale toggle for the X axis and the left and right Y axes.
 - Assign each Y series to the left or right Y axis for dual-axis plots.
 - The right Y axis is labeled and only shown when at least one series uses it.
+- Log axes pick tick density adaptively, so narrow ranges are not left with sparse decade-only ticks.
 
 ### Changed
 

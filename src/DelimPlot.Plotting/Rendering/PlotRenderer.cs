@@ -152,33 +152,45 @@ public static class PlotRenderer
         if (!double.IsFinite(min) || !double.IsFinite(max) || max <= min)
             return;
 
+        var range = max - min;
+        var mantissas = range >= 4
+            ? new[] { 1 }
+            : range >= 1
+                ? new[] { 1, 2, 5 }
+                : new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
         var minExponent = (int)Math.Floor(min);
         var maxExponent = (int)Math.Ceiling(max);
-
-        if (maxExponent - minExponent < 1)
-        {
-            minExponent--;
-            maxExponent++;
-        }
 
         var tickPositions = new List<double>();
         var tickLabels = new List<string>();
 
         for (var exponent = minExponent; exponent <= maxExponent; exponent++)
         {
-            tickPositions.Add(exponent);
-            tickLabels.Add(FormatPowerLabel(exponent));
+            foreach (var mantissa in mantissas)
+            {
+                var position = exponent + Math.Log10(mantissa);
+                if (position < min || position > max)
+                    continue;
+
+                tickPositions.Add(position);
+                tickLabels.Add(FormatLogTickLabel(mantissa, exponent));
+            }
         }
 
-        axis.SetTicks(tickPositions.ToArray(), tickLabels.ToArray());
+        if (tickPositions.Count > 0)
+            axis.SetTicks(tickPositions.ToArray(), tickLabels.ToArray());
     }
 
-    private static string FormatPowerLabel(int exponent)
+    private static string FormatLogTickLabel(int mantissa, int exponent)
     {
         if (exponent is >= -3 and <= 3)
-            return Math.Pow(10, exponent).ToString("0.###", CultureInfo.InvariantCulture);
+        {
+            var value = mantissa * Math.Pow(10, exponent);
+            return value.ToString("0.###", CultureInfo.InvariantCulture);
+        }
 
-        return $"1e{exponent}";
+        return mantissa == 1 ? $"1e{exponent}" : $"{mantissa}e{exponent}";
     }
 
     private static int ClampIndex(int index, int count)
